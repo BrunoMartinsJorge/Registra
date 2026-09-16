@@ -1,0 +1,67 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(uuid())
+  username  String   @unique
+  name      String
+  email     String   @unique
+  password  String
+  avatarUrl String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  photos    Photo[]
+  comments  Comment[]
+  likes     Like[]
+}
+
+model Photo {
+  id        String   @id @default(uuid())
+  imageUrl  String
+  caption   String?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId    String
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  comments  Comment[]
+  likes     Like[]
+
+  @@index([userId])
+  @@index([createdAt])
+}
+
+model Comment {
+  id        String   @id @default(uuid())
+  content   String
+  createdAt DateTime @default(now())
+
+  userId    String
+  photoId   String
+
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@index([photoId])
+  @@index([userId])
+}
+
+model Like {
+  id        String   @id @default(uuid())
+  createdAt DateTime @default(now())
+
+  userId    String
+  photoId   String
+
+  user      User  @relation(fields: [userId], references: [id], onDelete: Cascade)
+  photo     Photo @relation(fields: [photoId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, photoId])
+}
